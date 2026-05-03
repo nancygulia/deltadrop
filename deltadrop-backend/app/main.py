@@ -157,10 +157,10 @@ def create_app() -> FastAPI:
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins     = _get_allowed_origins(),
-        allow_credentials = True,
-        allow_methods     = ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers     = ["Authorization", "Content-Type", "Accept", "X-Requested-With"],
+        allow_origins=["*"],  # allow all for now
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     # ── Request logging middleware (errors + security events) ─────────────────
