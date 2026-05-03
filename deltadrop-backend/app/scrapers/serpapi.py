@@ -126,24 +126,28 @@ def _parse_stock_status(item: dict) -> bool:
 def _parse_item(item: dict) -> ScrapedPrice | None:
     """
     Parse one SerpAPI shopping result item into a ScrapedPrice.
-    Returns None if price is missing/unparseable.
+    Returns None ONLY if both price AND title are missing (completely empty result).
+    If price is absent but title/image/url exist, returns with current_price=None.
     """
     price = _parse_price(item.get("price"))
-    if price is None:
+    title = item.get("title", "").strip()
+    image = item.get("thumbnail")
+    link  = _resolve_link(item)
+
+    # Completely empty — nothing useful in this item
+    if not title and not image and not link:
         return None
 
-    retailer = item.get("source", "Unknown")
-    link = _resolve_link(item)
-    image = item.get("thumbnail")
+    retailer   = item.get("source", "Unknown")
     extensions = item.get("extensions", [])
-    mrp = _extract_mrp(extensions, price)
-    in_stock = _parse_stock_status(item)
+    mrp        = _extract_mrp(extensions, price) if price else None
+    in_stock   = _parse_stock_status(item)
 
     return ScrapedPrice(
         retailer      = retailer,
         url           = link,
-        product_name  = item.get("title", ""),
-        current_price = price,
+        product_name  = title,
+        current_price = price,      # may be None — that's okay
         mrp           = mrp,
         discount_pct  = None,
         in_stock      = in_stock,

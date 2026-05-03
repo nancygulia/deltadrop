@@ -766,7 +766,10 @@ def _is_relevant(query: str, title: str) -> bool:
     q_core, q_variants = _split_words(q_norm)
     t_core, t_variants = _split_words(t_norm)
     
-    if q_variants != t_variants:
+    # Only hard-reject on variant mismatch when the query explicitly specifies
+    # a variant (e.g. "iphone 17 pro") and title has a conflicting one.
+    # Never reject just because the title has MORE variants than the query.
+    if q_variants and t_variants and not (q_variants & t_variants) and not (q_variants <= t_core):
         return False
 
     # Fast pass: cleaned query is a substring of the title
@@ -785,8 +788,8 @@ def _is_relevant(query: str, title: str) -> bool:
     if len(q_words) <= 2:
         return len(matched) >= 1
 
-    # Longer queries: need ≥ 40% keyword overlap
-    return (len(matched) / len(q_words)) >= 0.4
+    # Longer queries: need ≥ 30% keyword overlap (lowered from 40%)
+    return (len(matched) / len(q_words)) >= 0.3
 
 
 def _match_score(query: str, title: str) -> float:
@@ -1168,15 +1171,14 @@ async def compare_prices(query: str, max_urls: int = MAX_SCRAPE_URLS) -> dict:
                             current_price = alt_extracted
                             break
 
-            # ── Compute match score and hard-reject irrelevant results ────
+            # ── Compute match score and soft-reject clearly irrelevant results ──
             score = _match_score(search_query, r.product_name) if r.product_name else 0.0
             key_tokens = _extract_key_tokens(search_query)
-            # Require at least 40% of key tokens (lowered from 60% to avoid
-            # rejecting valid results for short queries like "iphone 15")
-            min_required = max(1, int(len(key_tokens) * 0.4)) if key_tokens else 0
+            # Require at least 30% of key tokens (lowered to avoid rejecting valid results)
+            min_required = max(1, int(len(key_tokens) * 0.3)) if key_tokens else 0
             title_ok = _title_contains_tokens(r.product_name, key_tokens, min_required) if r.product_name else True
-            # Pass if EITHER tokens match OR score is above 0.25
-            if r.product_name and not title_ok and score < 0.25:
+            # Only hard-reject if BOTH token match fails AND score is very low (< 0.1)
+            if r.product_name and not title_ok and score < 0.1:
                 logger.info(
                     f"[Compare] ❌ Rejecting '{r.product_name[:60]}' "
                     f"(score={score:.2f}, tokens not matched for '{search_query}')"
