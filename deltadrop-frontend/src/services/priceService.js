@@ -13,7 +13,7 @@
 
 import { apiFetch } from './api'
 
-const BACKEND_BASE = import.meta.env.VITE_API_BASE?.replace('/api/v1', '') || 'http://127.0.0.1:8000'
+const BACKEND_BASE = import.meta.env.VITE_API_BASE_URL?.replace('/api/v1', '') || import.meta.env.VITE_API_BASE?.replace('/api/v1', '') || 'http://127.0.0.1:8000'
 
 export async function fetchProductPriceHistory(productId, days = 90) {
   if (!productId || String(productId).startsWith('search_')) {

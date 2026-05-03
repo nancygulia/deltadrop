@@ -7,7 +7,7 @@
  * Backend base: /api/v1  (set VITE_API_BASE in .env if needed)
  */
 
-const BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api/v1'
+const BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api/v1'
 const BACKEND_COOLDOWN_MS = 1500
 let backendOfflineUntil = 0
 
@@ -480,7 +480,7 @@ export const products = {
 
     try {
       console.log('[api.accurateSearch] request start', { query })
-      const res = await fetchWithBackendGuard(`/api/search?q=${encodeURIComponent(query)}`, { signal })
+      const res = await fetchWithBackendGuard(`${BASE.replace('/api/v1', '')}/api/search?q=${encodeURIComponent(query)}`, { signal })
       console.log('[api.accurateSearch] response received', { ok: res.ok, status: res.status })
       if (!res.ok) throw new Error(`Search error ${res.status}`)
       const data = await res.json()
