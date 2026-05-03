@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import sys
 import asyncio
 # ── Windows Compatibility (FORCE) ──────────────────────────────────────────
@@ -9,14 +8,11 @@ if sys.platform == 'win32':
     except Exception as e:
         print(f"⚠️  [Windows] Could not set SelectorEventLoopPolicy: {e}")
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 """
 DeltaDrop Backend — FastAPI Application Entry Point
 """
 import logging
 from contextlib import asynccontextmanager
-<<<<<<< HEAD
 
 
 print("\n" + "="*50)
@@ -24,33 +20,13 @@ print("DELTADROP BACKEND STARTING - CODE VERSION: DIRECT_RETAILER_V1")
 print("="*50 + "\n")
 
 from fastapi import FastAPI, Depends, HTTPException, Request
-=======
-import sys
-import asyncio
-
-# Fix Playwright NotImplementedError subprocess crash on Windows under FastAPI/Uvicorn
-if sys.platform == 'win32':
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
-    # Monkey-patch Uvicorn so it doesn't override the policy back to SelectorEventLoop
-    try:
-        import uvicorn
-        if hasattr(uvicorn, "config"):
-            uvicorn.config.setup_event_loop = lambda *args, **kwargs: None
-    except ImportError:
-        pass
-
-from fastapi import FastAPI, Depends, HTTPException
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
 from app.core.config import settings
 from app.core.security import get_current_user
-<<<<<<< HEAD
 from app.core.errors import register_error_handlers
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 from app.scrapers.base import close_browser
 
 logging.basicConfig(
@@ -68,7 +44,6 @@ async def lifespan(app: FastAPI):
     # ── Startup ───────────────────────────────────────────────────────────────
     logger.info("🚀 Starting DeltaDrop API...")
     
-<<<<<<< HEAD
     # OAuth provider validation (Google Only)
     google_configured = bool(settings.GOOGLE_CLIENT_ID)
     
@@ -77,20 +52,6 @@ async def lifespan(app: FastAPI):
         logger.info("💡 To configure Google OAuth: Set GOOGLE_CLIENT_ID in environment variables")
     else:
         logger.info("✅ Google OAuth is configured and ready.")
-=======
-    # OAuth provider validation
-    google_configured = bool(settings.GOOGLE_CLIENT_ID)
-    apple_configured = bool(settings.APPLE_BUNDLE_ID)
-    
-    if not google_configured and not apple_configured:
-        logger.warning("⚠️  No OAuth providers configured. Social login will be unavailable.")
-    elif google_configured and not apple_configured:
-        logger.warning("⚠️  Google OAuth configured but Apple Sign-In missing. Apple users cannot sign in.")
-    elif apple_configured and not google_configured:
-        logger.warning("⚠️  Apple Sign-In configured but Google OAuth missing. Google users cannot sign in.")
-    else:
-        logger.info("✅ Both Google OAuth and Apple Sign-In are configured.")
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
     # Create DB tables
     from app.db.session import engine, Base
@@ -118,7 +79,6 @@ async def lifespan(app: FastAPI):
     await close_browser()
     from app.db.session import engine
     await engine.dispose()
-<<<<<<< HEAD
     
     # Fix asyncio pipe cleanup warnings
     try:
@@ -140,8 +100,6 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.debug(f"Cleanup warning: {e}")
     
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     logger.info("✅ Shutdown complete")
 
 
@@ -169,7 +127,6 @@ async def _seed_admin():
 
 # ── App factory ───────────────────────────────────────────────────────────────
 
-<<<<<<< HEAD
 def _get_allowed_origins() -> list[str]:
     """Build the CORS allow-list from settings. Only the configured frontend origin
     and localhost dev servers are permitted — never wildcard."""
@@ -183,8 +140,6 @@ def _get_allowed_origins() -> list[str]:
     return origins
 
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 def create_app() -> FastAPI:
     app = FastAPI(
         title       = "DeltaDrop API",
@@ -195,17 +150,13 @@ def create_app() -> FastAPI:
         lifespan    = lifespan,
     )
 
-<<<<<<< HEAD
     # ── Standardized error handlers ───────────────────────────────────────────
     register_error_handlers(app)
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     # ── Middleware ─────────────────────────────────────────────────────────────
     app.add_middleware(GZipMiddleware, minimum_size=1000)
     app.add_middleware(
         CORSMiddleware,
-<<<<<<< HEAD
         allow_origins     = _get_allowed_origins(),
         allow_credentials = True,
         allow_methods     = ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
@@ -248,30 +199,6 @@ def create_app() -> FastAPI:
     app.include_router(compare_router,       prefix=PREFIX)
     app.include_router(alerts.router,        prefix=PREFIX)
     app.include_router(notifications.router, prefix=PREFIX)
-=======
-        allow_origins     = [settings.FRONTEND_ORIGIN, "http://localhost:5173", "http://127.0.0.1:5173"],
-        allow_credentials = True,
-        allow_methods     = ["*"],
-        allow_headers     = ["*"],
-    )
-
-    # ── Routers ────────────────────────────────────────────────────────────────
-    from app.api.routes.auth               import router as auth_router
-    from app.api.routes.products           import router as products_router
-    from app.api.routes.watchlist_alerts   import watchlist_router, alerts_router
-    from app.api.routes.admin              import router as admin_router
-    from app.api.routes.ai                 import router as ai_router
-    from app.api.routes.admin_sessions     import router as sessions_router
-
-    PREFIX = "/api/v1"
-    app.include_router(auth_router,       prefix=PREFIX)
-    app.include_router(products_router,   prefix=PREFIX)
-    app.include_router(watchlist_router,  prefix=PREFIX)
-    app.include_router(alerts_router,     prefix=PREFIX)
-    app.include_router(admin_router,      prefix=PREFIX)
-    app.include_router(ai_router,         prefix=PREFIX)
-    app.include_router(sessions_router,   prefix=PREFIX)
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
     # ── Health ─────────────────────────────────────────────────────────────────
     @app.get("/api/health", tags=["Health"])
@@ -283,10 +210,6 @@ def create_app() -> FastAPI:
             "version":   "1.0.0",
         }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     @app.get("/", tags=["Health"])
     async def root():
         return {"message": "DeltaDrop API · /docs for Swagger UI · /api/health for status"}
@@ -341,7 +264,6 @@ def create_app() -> FastAPI:
             _logger.error(f"[Search] search_and_track failed: {e}")
             return {"query": q, "results": [], "error": "Search unavailable. Please try again."}
 
-<<<<<<< HEAD
         # New search service contract: return the response payload directly.
         # Keep backward compatibility in case an older implementation returns a list.
         if isinstance(results, dict):
@@ -349,8 +271,6 @@ def create_app() -> FastAPI:
             results.setdefault("retailers_scanned", len(results.get("results") or []))
             return results
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         serialized = [
             {
                 "selection_id": r.get("selection_id"),
@@ -371,7 +291,6 @@ def create_app() -> FastAPI:
             if r.get("name")
         ]
 
-<<<<<<< HEAD
         if not serialized:
             try:
                 from app.scrapers.manager import scraper_manager
@@ -402,8 +321,6 @@ def create_app() -> FastAPI:
             except Exception as e:
                 _logger.warning(f"[Search] Fallback search failed: {e}")
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         # Determine search mode and message
         search_modes = [r.get("search_mode", "lightweight") for r in results]
         search_sources = [r.get("search_source", "serpapi") for r in results]
@@ -478,7 +395,6 @@ def create_app() -> FastAPI:
     async def price_history_api(product_id: int, days: int = 90):
         """
         Returns price history for a product.
-<<<<<<< HEAD
 
         Priority:
           1. Real rows from price_history table  (≥ 3 rows → use directly)
@@ -560,24 +476,10 @@ def create_app() -> FastAPI:
             from app.models.product import Product, PriceHistory
             from sqlalchemy import select
             from sqlalchemy.orm import selectinload
-=======
-        Provides both an aggregated 'Best Price' line and per-retailer data.
-        Filters out absurd price spikes (>2x or <0.5x of median) but ensures
-        at least 1 data point per day remains to keep the chart continuous.
-        """
-        try:
-            from app.db.session import AsyncSessionLocal
-            from app.models.product import PriceHistory
-            from sqlalchemy import select
-            from collections import defaultdict
-            from datetime import datetime, timedelta, timezone
-            import statistics
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
             since = datetime.now(timezone.utc) - timedelta(days=days)
 
             async with AsyncSessionLocal() as db:
-<<<<<<< HEAD
                 product_res = await db.execute(
                     select(Product)
                     .options(selectinload(Product.retailer_listings))
@@ -600,16 +502,10 @@ def create_app() -> FastAPI:
                         PriceHistory.product_id == product_id,
                         PriceHistory.recorded_at >= since,
                     )
-=======
-                res = await db.execute(
-                    select(PriceHistory)
-                    .where(PriceHistory.product_id == product_id, PriceHistory.recorded_at >= since)
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
                     .order_by(PriceHistory.recorded_at)
                 )
                 history = res.scalars().all()
 
-<<<<<<< HEAD
             # ── BRANCH 1: enough real data ────────────────────────────────────
             if len(history) >= 3:
                 all_prices   = [float(h.price) for h in history]
@@ -690,58 +586,6 @@ def create_app() -> FastAPI:
             }
 
         except Exception as e:
-=======
-            if not history:
-                return {"aggregated": [], "retailers": {}}
-
-            # Calculate median for outlier detection
-            all_prices = [float(h.price) for h in history]
-            median_price = statistics.median(all_prices) if all_prices else 0
-            lower_bound = median_price * 0.5
-            upper_bound = median_price * 2.0
-
-            retailers_map = defaultdict(list)
-            
-            # Group by day to compute daily aggregated minimums safely
-            daily_prices = defaultdict(list)
-
-            for h in history:
-                date_str = h.recorded_at.strftime("%Y-%m-%d")
-                price = float(h.price)
-                
-                # For per-retailer lines, just apply strict bounds (we don't need continuous lines for every single retailer)
-                if lower_bound <= price <= upper_bound:
-                    retailers_map[h.retailer.value].append({
-                        "date": date_str,
-                        "price": price
-                    })
-                
-                daily_prices[date_str].append(price)
-
-            aggregated_map = {} # date -> min_price
-            
-            for date_str, prices in daily_prices.items():
-                valid_prices = [p for p in prices if lower_bound <= p <= upper_bound]
-                if valid_prices:
-                    aggregated_map[date_str] = min(valid_prices)
-                else:
-                    # If all prices for this day were filtered out, fallback to the one closest to median
-                    closest_price = min(prices, key=lambda p: abs(p - median_price))
-                    aggregated_map[date_str] = closest_price
-
-            aggregated_list = [
-                {"date": d, "price": p} 
-                for d, p in sorted(aggregated_map.items())
-            ]
-
-            return {
-                "aggregated": aggregated_list,
-                "retailers": retailers_map
-            }
-        except Exception as e:
-            import logging as _logging
-            _logger = _logging.getLogger("uvicorn")
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
             _logger.error(f"[price_history_api] Error: {e}")
             return {"aggregated": [], "retailers": {}}
 
@@ -754,7 +598,6 @@ def create_app() -> FastAPI:
         """
         import logging as _logging
         _logger = _logging.getLogger("uvicorn")
-<<<<<<< HEAD
         _logger.info(f"[recommendation_api] start product_id={product_id}")
 
         # Hard-coded safety net — if anything below crashes, we STILL return valid JSON
@@ -769,15 +612,6 @@ def create_app() -> FastAPI:
                 "smart_recommendation": "Check back soon",
                 "suggested_alert_price": None,
             },
-=======
-
-        # Hard-coded safety net — if anything below crashes, we STILL return valid JSON
-        _safe_fallback = {
-            "verdict":   "NEUTRAL",
-            "reasoning": "AI Sentinel is warming up. Price analysis will be available shortly.",
-            "confidence": 0,
-            "method":    "safe_fallback",
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         }
 
         try:
@@ -797,7 +631,6 @@ def create_app() -> FastAPI:
                 )
                 product = res.scalar_one_or_none()
                 if not product:
-<<<<<<< HEAD
                     _logger.warning(f"[recommendation_api] product missing product_id={product_id}")
                     raise HTTPException(status_code=404, detail="Product not found")
                 _logger.info(
@@ -815,16 +648,12 @@ def create_app() -> FastAPI:
                     f"[recommendation_api] live prices collected product_id={product_id} "
                     f"seller_count={seller_count} live_prices={live_prices}"
                 )
-=======
-                    raise HTTPException(status_code=404, detail="Product not found")
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
                 # 2. Price history + ATL
                 res = await db.execute(
                     select(PriceHistory).where(PriceHistory.product_id == product_id).order_by(PriceHistory.recorded_at)
                 )
                 history = res.scalars().all()
-<<<<<<< HEAD
                 _logger.info(f"[recommendation_api] history rows product_id={product_id} count={len(history)}")
                 if not history:
                     if live_prices:
@@ -853,29 +682,15 @@ def create_app() -> FastAPI:
 
                 min_price  = float(min(h.price for h in history))
                 max_price  = float(max(h.price for h in history))
-=======
-                if not history:
-                    return {
-                        "verdict":    "NEUTRAL",
-                        "reasoning":  "Tracking just started — price history is being built. Check back soon.",
-                        "confidence": 0,
-                        "method":     "no_data",
-                    }
-
-                min_price  = float(min(h.price for h in history))
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
                 week_ago   = datetime.now(timezone.utc) - timedelta(days=7)
                 recent     = [float(h.price) for h in history if h.recorded_at >= week_ago]
                 trend      = 0.0
                 if len(recent) > 1:
                     trend = ((recent[0] - recent[-1]) / (recent[-1] + 0.01)) * 100
-<<<<<<< HEAD
                 _logger.info(
                     f"[recommendation_api] derived metrics product_id={product_id} "
                     f"min_price={min_price} max_price={max_price} trend={trend}"
                 )
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
                 # 3. ML Prediction (best-effort)
                 res = await db.execute(
@@ -890,7 +705,6 @@ def create_app() -> FastAPI:
                     confidence      = float(pred.confidence) if pred.confidence else 0.5
                 else:
                     # Trigger async, use current as estimate for now
-<<<<<<< HEAD
                     prices = live_prices
                     predicted_price = (min(prices) * 0.97) if prices else min_price
                     confidence      = 0.4
@@ -898,11 +712,6 @@ def create_app() -> FastAPI:
                     f"[recommendation_api] prediction snapshot product_id={product_id} "
                     f"predicted_price={predicted_price} confidence={confidence}"
                 )
-=======
-                    prices = [float(l.current_price) for l in product.retailer_listings if l.current_price]
-                    predicted_price = (min(prices) * 0.97) if prices else min_price
-                    confidence      = 0.4
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
                 # 4. Best current price
                 live_prices = [
@@ -911,7 +720,6 @@ def create_app() -> FastAPI:
                     if l.current_price and l.in_stock
                 ]
                 curr_price = min(live_prices) if live_prices else min_price
-<<<<<<< HEAD
                 seller_count = len([l for l in product.retailer_listings if l.current_price])
                 _logger.info(
                     f"[recommendation_api] current price product_id={product_id} curr_price={curr_price} seller_count={seller_count}"
@@ -938,12 +746,6 @@ def create_app() -> FastAPI:
                 _logger.info(
                     f"[recommendation_api] recommendation ready product_id={product_id} "
                     f"verdict={recommendation.get('verdict')} method={recommendation.get('method')}"
-=======
-
-                # 5. AI reasoning (internally never throws)
-                recommendation = await get_ai_recommendation(
-                    product.name, curr_price, min_price, trend, predicted_price, confidence
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
                 )
 
                 return recommendation

@@ -152,7 +152,6 @@ async def job_check_alerts():
     logger.info(f"[Scheduler] ✅ Alert check done: {triggered} triggered")
 
 
-<<<<<<< HEAD
 async def job_check_simple_alerts():
     """
     Check all active SimpleWatchlistAlerts (email-only, no login required).
@@ -236,8 +235,6 @@ async def job_check_simple_alerts():
     logger.info(f"[Scheduler] ✅ Simple alert check done: {triggered} triggered")
 
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 # ── Scheduler lifecycle ───────────────────────────────────────────────────────
 
 def _on_job_event(event):
@@ -271,7 +268,6 @@ def start_scheduler():
         name="Check Price Alerts", replace_existing=True,
     )
 
-<<<<<<< HEAD
     # Simple (email-only) watchlist alert check every 10 minutes
     scheduler.add_job(
         job_check_simple_alerts,
@@ -279,8 +275,6 @@ def start_scheduler():
         name="Check Simple Watchlist Alerts", replace_existing=True,
     )
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     # Cleanup old data daily at 3am IST
     scheduler.add_job(
         job_cleanup_old_data,
@@ -289,18 +283,10 @@ def start_scheduler():
     )
 
     scheduler.start()
-<<<<<<< HEAD
     logger.info("✅ APScheduler started with 5 jobs")
-=======
-    logger.info("✅ APScheduler started with 4 jobs")
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 
 def stop_scheduler():
     if scheduler.running:
         scheduler.shutdown(wait=False)
         logger.info("APScheduler stopped")
-<<<<<<< HEAD
-
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3

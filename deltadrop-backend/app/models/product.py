@@ -42,10 +42,7 @@ class RetailerName(str, enum.Enum):
     meesho    = "Meesho"
     ajio      = "AJIO"
     snapdeal  = "Snapdeal"
-<<<<<<< HEAD
     cashify   = "Cashify"
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 
 class Product(Base):
@@ -99,14 +96,11 @@ class RetailerListing(Base):
     product       = relationship("Product",      back_populates="retailer_listings")
     price_history = relationship("PriceHistory", back_populates="listing",  cascade="all, delete-orphan")
 
-<<<<<<< HEAD
     @property
     def safe_in_stock(self) -> bool:
         """Safe stock check - returns True if in_stock is True or None (treated as True)"""
         return self.in_stock is True or self.in_stock is None
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     __table_args__ = (
         UniqueConstraint("product_id", "retailer", name="uq_product_retailer"),
         Index("ix_listings_retailer_active", "retailer", "is_active"),
@@ -185,7 +179,6 @@ class PriceAlert(Base):
     user    = relationship("User",    back_populates="alerts")
     product = relationship("Product", back_populates="alerts")
 
-<<<<<<< HEAD
 from sqlalchemy import JSON
 
 class SearchCache(Base):
@@ -240,6 +233,3 @@ class Notification(Base):
     __table_args__ = (
         Index("ix_notifications_email_unread", "email", "is_read"),
     )
-=======
-
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3

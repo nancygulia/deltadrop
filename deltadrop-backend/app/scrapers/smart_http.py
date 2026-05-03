@@ -31,12 +31,9 @@ logger = logging.getLogger(__name__)
 # ScraperAPI concurrency limit (Trial = 5)
 _scraperapi_semaphore = asyncio.Semaphore(5)
 
-<<<<<<< HEAD
 # Scrape.do concurrency limit
 _scrapedo_semaphore = asyncio.Semaphore(5)
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 # ── Tier → waterfall order ────────────────────────────────────────────────────
 # For each site tier, defines the ORDER of HTTP methods to try.
 # First = preferred (fastest/least blocked). Last = guaranteed fallback.
@@ -207,10 +204,7 @@ def _fetch_httpx(url: str, timeout: int = 12) -> Optional[str]:
     """
     try:
         import httpx
-<<<<<<< HEAD
         logger.debug("[SmartHTTP] httpx import successful")
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         headers = {
             "User-Agent":      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
             "Accept":          "text/html,application/xhtml+xml,*/*;q=0.8",
@@ -221,18 +215,11 @@ def _fetch_httpx(url: str, timeout: int = 12) -> Optional[str]:
             if resp.status_code < 400:
                 return resp.text
         return None
-<<<<<<< HEAD
     except ImportError as e:
         logger.warning(f"[SmartHTTP] httpx import failed: {e} — skipping")
         return None
     except Exception as e:
         logger.warning(f"[SmartHTTP] httpx fetch failed: {e} — skipping")
-=======
-    except ImportError:
-        logger.warning("[SmartHTTP] httpx not installed — skipping")
-        return None
-    except Exception:
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         return None
 
 
@@ -252,17 +239,12 @@ async def _fetch_scraperapi(url: str, timeout: int = 15) -> Optional[str]:
             import concurrent.futures
 
             encoded_url = urllib.parse.quote_plus(url)
-<<<<<<< HEAD
             api_url = f"https://api.scraperapi.com?api_key={settings.SCRAPER_API_KEY}&url={encoded_url}&render_js=true&premium=true&country_code=in"
-=======
-            api_url = f"http://api.scraperapi.com?api_key={settings.SCRAPER_API_KEY}&url={encoded_url}"
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
             
             loop = asyncio.get_event_loop()
             
             def _sync_fetch():
                 req = urllib.request.Request(api_url)
-<<<<<<< HEAD
                 req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
                 req.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8')
                 req.add_header('Accept-Language', 'en-US,en;q=0.5')
@@ -274,8 +256,6 @@ async def _fetch_scraperapi(url: str, timeout: int = 15) -> Optional[str]:
                 req.add_header('Sec-Fetch-Mode', 'navigate')
                 req.add_header('Sec-Fetch-Site', 'none')
                 req.add_header('Cache-Control', 'max-age=0')
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
                 with urllib.request.urlopen(req, timeout=timeout) as resp:
                     return resp.read().decode("utf-8", errors="replace")
 
@@ -287,7 +267,6 @@ async def _fetch_scraperapi(url: str, timeout: int = 15) -> Optional[str]:
             return None
 
 
-<<<<<<< HEAD
 async def _fetch_scrapedo(
     url: str,
     timeout: int = 15,
@@ -333,8 +312,6 @@ async def _fetch_scrapedo(
             return None
 
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 # ── Core waterfall function ───────────────────────────────────────────────────
 
 async def smart_fetch(
@@ -401,7 +378,6 @@ async def smart_fetch(
     high_value_retailers = ["amazon", "flipkart", "google", "nykaa", "ajio", "tatacliq"]
     is_high_value = any(hv in (retailer or "").lower() for hv in high_value_retailers)
     
-<<<<<<< HEAD
     if (settings.SCRAPER_API_KEY or settings.SCRAPE_DO_API_KEY) and is_high_value:
         logger.info(f"[{retailer}] 🚀 Professional Mode: trying managed unblockers for major retailer")
 
@@ -420,17 +396,6 @@ async def smart_fetch(
                 return html, "scraperapi", total_ms
 
         logger.warning(f"[{retailer}] ⚠️ Managed unblocker priority failed or returned block page. Falling back to HTTP race.")
-=======
-    if settings.SCRAPER_API_KEY and is_high_value:
-        logger.info(f"[{retailer}] 🚀 Professional Mode: Using ScraperAPI immediately for major retailer")
-        html = await _fetch_scraperapi(url)
-        if html and not _is_blocked(html):
-            total_ms = int((time.monotonic() - t_start) * 1000)
-            logger.info(f"[{retailer}] ✅ ScraperAPI (Priority) won in {total_ms}ms")
-            return html, "scraperapi", total_ms
-        else:
-            logger.warning(f"[{retailer}] ⚠️ ScraperAPI priority failed or returned block page. Falling back to HTTP race.")
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
     async def _timed_fetch(method: str) -> tuple[str, Optional[str]]:
         """Run one HTTP method with per-method timeout, return (method, html)."""
@@ -454,13 +419,10 @@ async def smart_fetch(
     if settings.SCRAPER_API_KEY:
         scraper_api_waiter = asyncio.create_task(_fetch_scraperapi(url))
 
-<<<<<<< HEAD
     scrape_do_waiter = None
     if settings.SCRAPE_DO_API_KEY:
         scrape_do_waiter = asyncio.create_task(_fetch_scrapedo(url, timeout=timeout, render=is_high_value, wait_until="domcontentloaded", custom_wait=1000 if is_high_value else 0))
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     # Process results as they complete (fastest first)
     winner_html       = None
     winner_method     = None
@@ -538,7 +500,6 @@ async def smart_fetch(
         except Exception as e:
             logger.warning(f"[{label}] ❌ ScraperAPI failed: {e}")
 
-<<<<<<< HEAD
     if scrape_do_waiter:
         try:
             logger.info(f"[{label}] 🚀 Attempting professional fetch via Scrape.do...")
@@ -550,8 +511,6 @@ async def smart_fetch(
         except Exception as e:
             logger.warning(f"[{label}] ❌ Scrape.do failed: {e}")
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     # ── All HTTP methods failed → Playwright fallback ─────────────────────────
     # Playwright unavoidably takes >1s (real Chrome launch + page render).
     # We still use it to guarantee the retailer appears in results.

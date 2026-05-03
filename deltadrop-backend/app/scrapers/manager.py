@@ -41,7 +41,6 @@ def normalize_search_query(query: str) -> str:
     """Normalize user queries so search behavior is case-insensitive."""
     return " ".join((query or "").strip().lower().split())
 
-<<<<<<< HEAD
 
 def _passes_price_sanity(query: str, result: ScrapedPrice) -> bool:
     """Reject obvious accessories/mismatches that pass text relevance for premium devices."""
@@ -112,14 +111,6 @@ def _cache_set(key: str, value: Any, ttl: int = _CACHE_TTL):
         stale = [k for k, (ts, _) in _SEARCH_CACHE.items() if now - ts > _CACHE_TTL]
         for k in stale:
             del _SEARCH_CACHE[k]
-=======
-def _cache_get(key: str):
-    # Dummy cache for now, could be Redis
-    return None
-
-def _cache_set(key: str, value: Any, ttl: int = 300):
-    pass
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 class ScraperManager:
     """
@@ -138,11 +129,7 @@ class ScraperManager:
         if cached:
             return cached
 
-<<<<<<< HEAD
         results = await self.accurate_search(normalized_query, allowed_retailers=retailers)
-=======
-        results = await self.accurate_search(normalized_query)
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
         # Determine diagnosis based on results
         diagnosis = None
@@ -169,7 +156,6 @@ class ScraperManager:
             logger.info(f"[Manager] Persisting {len(high_relevance)} matches for '{normalized_query}'...")
             await self._persist_results(high_relevance)
 
-<<<<<<< HEAD
         # After persisting, look up real DB product IDs by slug so the frontend
         # can load real price history instead of generating demo/mock data.
         from app.utils.slugify import slugify
@@ -195,12 +181,6 @@ class ScraperManager:
             db_id = slug_to_db_id.get(r_slug)  # real integer ID or None
             result_dict = {
                 "id": db_id,                   # ← real DB ID enables real price history chart
-=======
-        # Ensure results always contain at least partial data with confidence indicators
-        enhanced_results = []
-        for r in results:
-            result_dict = {
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
                 "product_name": r.product_name,
                 "url": r.url,
                 "retailer": r.retailer,
@@ -242,7 +222,6 @@ class ScraperManager:
             # _persist_results will update existing listings and prune old ones
             await self.search_and_track(product.name)
 
-<<<<<<< HEAD
     async def accurate_search(self, query: str, allowed_retailers: Optional[List[str]] = None):
         """
         Optimized search pipeline:
@@ -261,20 +240,10 @@ class ScraperManager:
         import asyncio
 
         _scrape_sem = asyncio.Semaphore(5)  # Max 5 concurrent scrapes
-=======
-    async def accurate_search(self, query: str):
-        """
-        1. Try SerpAPI (Real API) with India-market search query.
-        2. If fails/empty -> Fallback to UniversalScraper.
-        3. Attach relevance scores for persistence filter.
-        """
-        from app.scrapers.serpapi import serpapi_scraper
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
         query = normalize_search_query(query)
         logger.info(f"[Manager] Starting Accurate Search for: '{query}'")
 
-<<<<<<< HEAD
         # Brand filter
         if not allowed_retailers:
             allowed_retailers = get_allowed_retailers(query)
@@ -373,35 +342,10 @@ class ScraperManager:
                 logger.debug(f"[Manager] Skipped low relevance: {r.product_name} ({score:.2f})")
                 continue
             if not _passes_price_sanity(query, r):
-=======
-        # Enrich query for better Indian retail coverage
-        enriched_query = query
-        if not any(kw in query.lower() for kw in ["buy", "india", "price", "online"]):
-            enriched_query = f"{query} price India"
-
-        api_results = await serpapi_scraper.search_shopping(enriched_query)
-
-        valid_api = []
-        for r in api_results:
-            # 1. Calculate relevance
-            score = universal_scraper.calculate_relevance(query, r.product_name, retailer=r.retailer, url=r.url)
-            r.relevance_score = score
-            
-            # 2. Filter by threshold (0.5 for search results)
-            if score < 0.5:
-                logger.debug(f"[Manager] Skipping low relevance result: {r.product_name} ({score:.2f})")
-                continue
-
-            # 3. Direct Product Page Validation
-            is_direct = self._is_direct_product_url(r.url)
-            if not is_direct:
-                logger.debug(f"[Manager] Skipping non-direct URL: {r.url}")
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
                 continue
             valid_api.append(r)
 
         if valid_api:
-<<<<<<< HEAD
             logger.info(f"[Manager] SerpAPI: {len(valid_api)} valid results for '{query}'")
 
         # ── Score & filter Universal results ──────────────────────────────
@@ -415,21 +359,10 @@ class ScraperManager:
                 logger.debug(f"[Manager] Skipped blocked retailer: {r.product_name} ({r.retailer})")
                 continue
 
-=======
-            logger.info(f"[Manager] SerpAPI returned {len(valid_api)} results for '{query}'.")
-            return valid_api
-
-        logger.warning(f"[Manager] SerpAPI empty. Falling back to universal scraping for '{query}'.")
-        engine_res = await universal_scraper.search_by_name(query)
-        fallback_results = engine_res.get("results") or []
-
-        for r in fallback_results:
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
             if not hasattr(r, "relevance_score"):
                 r.relevance_score = universal_scraper.calculate_relevance(
                     query, r.product_name, retailer=r.retailer, url=r.url
                 )
-<<<<<<< HEAD
             if r.relevance_score >= 0.5 and _passes_price_sanity(query, r):
                 valid_fallback.append(r)
 
@@ -459,10 +392,6 @@ class ScraperManager:
 
         logger.info(f"[Manager] ✅ Combined: {len(combined)} unique results for '{query}'")
         return combined
-=======
-
-        return fallback_results
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
     async def _persist_results(self, results):
         """
@@ -558,7 +487,6 @@ class ScraperManager:
                     if dpct is None and r.current_price and safe_mrp and safe_mrp > 0:
                         dpct = ((safe_mrp - r.current_price) / safe_mrp) * 100
 
-<<<<<<< HEAD
                     self._append_price_history(
                         db,
                         product_id=product.id,
@@ -569,17 +497,6 @@ class ScraperManager:
                         discount_pct=dpct,
                         in_stock=safe_stock,
                     )
-=======
-                    db.add(PriceHistory(
-                        product_id  = product.id,
-                        listing_id  = listing.id,
-                        retailer    = retailer_enum,
-                        price       = r.current_price,
-                        mrp         = safe_mrp,
-                        discount_pct= dpct,
-                        in_stock    = safe_stock,
-                    ))
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
                     await savepoint.commit()
                     logger.debug(f"[Manager] Persisted: {r.product_name} @ {r.retailer}")
@@ -721,7 +638,6 @@ class ScraperManager:
         if dpct is None and scraped.current_price and scraped.mrp and scraped.mrp > 0:
             dpct = ((scraped.mrp - scraped.current_price) / scraped.mrp) * 100
 
-<<<<<<< HEAD
         self._append_price_history(
             db,
             product_id=product.id,
@@ -732,17 +648,6 @@ class ScraperManager:
             discount_pct=dpct,
             in_stock=safe_stock,
         )
-=======
-        db.add(PriceHistory(
-            product_id   = product.id,
-            listing_id   = listing.id,
-            retailer     = retailer_enum,
-            price        = scraped.current_price,
-            mrp          = scraped.mrp,
-            discount_pct = dpct,
-            in_stock     = safe_stock,
-        ))
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         await db.commit()
         await db.refresh(product)
 
@@ -769,7 +674,6 @@ class ScraperManager:
                     scrape_errors   = 0,
                 )
             )
-<<<<<<< HEAD
             self._append_price_history(
                 db,
                 product_id=listing.product_id,
@@ -807,19 +711,6 @@ class ScraperManager:
             recorded_at  = datetime.now(timezone.utc),
         ))
 
-=======
-            db.add(PriceHistory(
-                product_id   = listing.product_id,
-                listing_id   = listing.id,
-                retailer     = listing.retailer,
-                price        = result.current_price,
-                mrp          = result.mrp,
-                discount_pct = dpct,
-                in_stock     = safe_stock,
-            ))
-            await db.commit()
-
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     async def _record_error(self, listing: RetailerListing, error: str):
         async with AsyncSessionLocal() as db:
             await db.execute(

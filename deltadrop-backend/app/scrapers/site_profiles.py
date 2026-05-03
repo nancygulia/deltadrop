@@ -262,8 +262,6 @@ SITE_PROFILES: dict[str, SiteProfile] = {
         mrp_selectors=["[class*='amount'][class*='regular']", ".pdp-mrp"],
         name_selectors=["h1.pdp-product-name", "h1[itemprop='name']"],
         image_selectors=[".pdp-image img", "[itemprop='image']"],
-<<<<<<< HEAD
-
         # Text search (HTML card)
         search_url="https://www.croma.com/searchB?q={query}%3Arelevance&text={query}",
         search_type="html",
@@ -296,9 +294,6 @@ SITE_PROFILES: dict[str, SiteProfile] = {
         result_image_sel="img",
         result_link_prefix="https://www.cashify.in",
         notes="Refurbished electronics. No heavy bot protection.",
-=======
-        notes="No bot protection.",
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     ),
 
     "vijaysales.com": SiteProfile(
@@ -460,17 +455,11 @@ SITE_PROFILES: dict[str, SiteProfile] = {
 # ── Lookup helpers ────────────────────────────────────────────────────────────
 
 def get_profile(url: str) -> Optional[SiteProfile]:
-<<<<<<< HEAD
     """Return the SiteProfile for a given URL or domain, or None if unknown."""
     from urllib.parse import urlparse
     raw = (url or "").strip().lower()
     parsed = urlparse(raw)
     domain = (parsed.netloc or parsed.path).lower().replace("www.", "").strip("/")
-=======
-    """Return the SiteProfile for a given URL, or None if unknown."""
-    from urllib.parse import urlparse
-    domain = urlparse(url).netloc.lower().replace("www.", "")
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     for registered, profile in SITE_PROFILES.items():
         if domain.endswith(registered):
             return profile

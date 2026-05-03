@@ -1,10 +1,7 @@
 import logging
 import re
 import hashlib
-<<<<<<< HEAD
 import aiohttp
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 import requests
 from typing import List
 from decimal import Decimal
@@ -40,11 +37,7 @@ def _resolve_link(item: dict) -> str:
     """
     Return the most direct retailer URL available.
     Priority: direct_link → link (unwrapped if Google redirect) → product_link
-<<<<<<< HEAD
     Google Shopping product pages are allowed as a last-resort fallback.
-=======
-    Never returns a Google Shopping or empty URL.
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     """
     # 1. SerpAPI's direct_link field (cleanest option)
     direct = item.get("direct_link") or ""
@@ -52,28 +45,18 @@ def _resolve_link(item: dict) -> str:
         return direct
 
     # 2. main link field — unwrap Google redirect if needed
-<<<<<<< HEAD
-    link = item.get("link") or ""
-=======
     link = item.get("link") or item.get("product_link") or ""
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     if link and "google.com/url?" in link:
         match = re.search(r"[?&]url=([^&]+)", link)
         if match:
             link = unquote(match.group(1))
-<<<<<<< HEAD
-    if link and "google.com/search" not in link:
+    if link and not link.startswith("https://www.google.com/search"):
         return link
 
     product_link = item.get("product_link") or ""
     if product_link:
         return product_link
 
-=======
-    if link and not link.startswith("https://www.google.com/search"):
-        return link
-
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     # 3. Fallback: empty string (handled upstream)
     return ""
 
@@ -194,24 +177,16 @@ class SerpAPIScraper:
             "api_key": self.api_key,
             "gl": "in",
             "hl": "en",
-<<<<<<< HEAD
             "num": "20",  # Request more results
             "device": "desktop",  # Desktop results
             "safe": "active",  # Safe search
+            "direct_link": "true",
         }
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.BASE_URL, params=params, timeout=15) as response:
                     response.raise_for_status()
                     data = await response.json()
-=======
-            "direct_link": "true",
-        }
-        try:
-            response = requests.get(self.BASE_URL, params=params, timeout=15)
-            response.raise_for_status()
-            data = response.json()
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
             raw_items = (data.get("shopping_results", []) + data.get("inline_shopping_results", []))[: limit * 3]
             grouped: dict[str, dict] = {}
             for item in raw_items:
@@ -265,16 +240,10 @@ class SerpAPIScraper:
         }
 
         try:
-<<<<<<< HEAD
             async with aiohttp.ClientSession() as session:
                 async with session.get(self.BASE_URL, params=params, timeout=aiohttp.ClientTimeout(total=15)) as response:
                     response.raise_for_status()
                     data = await response.json()
-=======
-            response = requests.get(self.BASE_URL, params=params, timeout=15)
-            response.raise_for_status()
-            data = response.json()
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
             # ── Issue 1 Fix: Merge BOTH result sections ──────────────────────
             raw_items: list[dict] = []

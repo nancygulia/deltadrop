@@ -3,7 +3,7 @@ Universal Product Scraper — Works for ANY website
 ==================================================
 Anti-blocking strategy (5-layer waterfall):
   L0: Shopify/WooCommerce JSON API  — instant, no HTML parsing needed
-  L1: SmartHTTP (urllib → curl_cffi → httpx → cloudscraper)
+  L1: SmartHTTP (urllib -> curl_cffi -> httpx -> cloudscraper)
       Uses per-site profile to pick the right HTTP method first
   L2: JSON-LD / OpenGraph extraction from fetched HTML
   L3: Custom CSS selectors (per-site profile, then universal fallback)
@@ -490,7 +490,6 @@ class UniversalScraper(BaseScraper):
     async def _playwright_scrape(self, url: str, retailer: str, profile: Optional[SiteProfile] = None) -> ScrapedPrice:
         """
         Full Playwright scrape with stealth mode.
-<<<<<<< HEAD
         Used as last resort for heavy JS pages (JS-rendered prices/images).
         """
         try:
@@ -535,54 +534,10 @@ class UniversalScraper(BaseScraper):
             # Return an empty result with the error rather than crashing
             return ScrapedPrice(retailer=retailer, url=url, product_name="", current_price=None, mrp=None, discount_pct=None, error=str(e))
 
-=======
-        Used as last resort for heavy JS pages (Meesho, Tanishq etc.)
-        """
-        wait_sel = (profile.wait_selector if profile else None) or "body"
-        page = await self._get_page(url, wait_selector=wait_sel)
-        try:
-            # Wait a bit extra for JS price rendering
-            await page.wait_for_timeout(2000)
-
-            # Get rendered HTML and parse it
-            html = await page.content()
-            result = self._parse_html(html, url, retailer, profile)
-            if result.current_price:
-                return result
-
-            # If still no price, try Playwright-based element extraction
-            # (JS may have rendered it into elements not in initial HTML)
-            price_sels = (profile.price_selectors if profile else []) + PRICE_SELECTORS
-            for sel in price_sels:
-                val = await self._pw_text(page, sel)
-                if val and re.search(r'\d', val):
-                    p = self.parse_price(val)
-                    if p and p > 0:
-                        result.current_price = p
-                        break
-
-            if not result.image_url:
-                image_sels = (profile.image_selectors if profile else []) + IMAGE_SELECTORS
-                for sel in image_sels:
-                    img = (await self._pw_attr(page, sel, "src") or
-                           await self._pw_attr(page, sel, "data-src"))
-                    if img and img.startswith("http"):
-                        result.image_url = img
-                        break
-
-            return result
-        finally:
-            await page.context.close()
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
-
     # ─────────────────────────────────────────────────────────────────────────
     # TEXT SEARCH — profile-driven, all retailers in parallel
     # ─────────────────────────────────────────────────────────────────────────
-<<<<<<< HEAD
     async def search_by_name(self, query: str, limit_per_site: int = 5, user_category: Optional[str] = None, allowed_retailers: Optional[list[str]] = None) -> dict:
-=======
-    async def search_by_name(self, query: str, limit_per_site: int = 5, user_category: Optional[str] = None) -> dict:
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         """
         Deltadrop Identity & Discovery (DID) Engine.
         1. Resolve Identity via Google.
@@ -619,7 +574,6 @@ class UniversalScraper(BaseScraper):
         # B: Profile-driven backup
         all_profiles = get_searchable_profiles()
         filtered_profiles, brand_urls = get_relevant_retailers(canonical_name, all_profiles)
-<<<<<<< HEAD
         from app.scrapers.search_optimizer import search_optimizer
         
         scrape_profiles = []
@@ -634,12 +588,6 @@ class UniversalScraper(BaseScraper):
                     logger.debug(f"[Universal] Skipping blocked retailer profile: {p.domain}")
                     continue
             scrape_profiles.append(p)
-=======
-        scrape_profiles = [
-            p for p in filtered_profiles
-            # if not (amazon_paapi.is_available and "amazon" in p.domain)
-        ]
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         profile_task = asyncio.gather(
             *[self._search_one_site(search_query, p, limit_per_site) for p in scrape_profiles],
             return_exceptions=True
@@ -850,9 +798,9 @@ class UniversalScraper(BaseScraper):
         """
         Search one retailer using its profile config.
         Handles three search types:
-          html          → fetch HTML, parse product cards
-          json_api      → call JSON REST API, extract from structured response
-          embedded_json → fetch HTML, extract JSON blob via regex
+          html          -> fetch HTML, parse product cards
+          json_api      -> call JSON REST API, extract from structured response
+          embedded_json -> fetch HTML, extract JSON blob via regex
         """
         import asyncio as _asyncio
         try:
@@ -1126,21 +1074,21 @@ class UniversalScraper(BaseScraper):
         return r
 
     # ─────────────────────────────────────────────────────────────────────────
-    # IMAGE SEARCH — Google Lens → name → search_by_name (auto-discovery included)
+    # IMAGE SEARCH — Google Lens -> name -> search_by_name (auto-discovery included)
     # ─────────────────────────────────────────────────────────────────────────
     async def search_by_image(self, image_bytes: bytes, mime: str = "image/jpeg") -> list[ScrapedPrice]:
         """
-        Image → Google Lens → product name → search_by_name()
+        Image -> Google Lens -> product name -> search_by_name()
         search_by_name() already runs BOTH Engine 1 (profiles) + Engine 2 (auto-discovery).
         So image search gets full cross-retailer comparison automatically.
         """
-        logger.info("[Universal] Image search: Google Lens → product name → full comparison")
+        logger.info("[Universal] Image search: Google Lens -> product name -> full comparison")
         product_name = await self._google_lens_name(image_bytes, mime)
         if not product_name:
             logger.warning("[Universal] Lens returned no product name — cannot compare")
             return []
         
-        logger.info(f"[Universal] Lens identified: '{product_name}' → running full comparison")
+        logger.info(f"[Universal] Lens identified: '{product_name}' -> running full comparison")
         # search_by_name has both Engine 1 (profiles) + Engine 2 (auto-discovery)
         result = await self.search_by_name(product_name)
         return result.get("results", []) if isinstance(result, dict) else result
@@ -1154,12 +1102,12 @@ class UniversalScraper(BaseScraper):
         Returns price from that site AND comparison from ALL other retailers.
 
         Flow:
-          1. Scrape the URL → get product name + this retailer's price
-          2. Use product name → search_by_name() → Engine1 + Auto-discovery
+          1. Scrape the URL -> get product name + this retailer's price
+          2. Use product name -> search_by_name() -> Engine1 + Auto-discovery
           3. Merge: original URL result + all discovered retailers
           4. Deduplicate by domain (original site already scraped, don't double-show)
 
-        Result: User pastes Croma URL → sees Croma + Amazon + Flipkart + Vijay Sales etc.
+        Result: User pastes Croma URL -> sees Croma + Amazon + Flipkart + Vijay Sales etc.
         """
         logger.info(f"[Universal] URL comparison: {url}")
 
@@ -1170,7 +1118,7 @@ class UniversalScraper(BaseScraper):
             return [original] if original.current_price else []
 
         product_name = original.product_name
-        logger.info(f"[Universal] URL identified product: '{product_name}' → searching all retailers")
+        logger.info(f"[Universal] URL identified product: '{product_name}' -> searching all retailers")
 
         # Step 2: Search all retailers with the extracted product name
         # search_by_name runs both profile-driven + auto-discovery in parallel
@@ -1190,7 +1138,7 @@ class UniversalScraper(BaseScraper):
         all_results = self._deduplicate_by_domain(all_results)
 
         logger.info(
-            f"[Universal] compare_from_url '{product_name}' → "
+            f"[Universal] compare_from_url '{product_name}' -> "
             f"{len(all_results)} retailers (original + {len(all_results)-1} discovered)"
         )
         return all_results
@@ -1200,13 +1148,10 @@ class UniversalScraper(BaseScraper):
         items = results.get("results", []) if isinstance(results, dict) else results
         return items[:limit]
 
-<<<<<<< HEAD
     async def search_products(self, query: str, retailer: str = None, limit: int = 5) -> list[ScrapedPrice]:
         """Alias for search_product to match search service expectations"""
         return await self.search_product(query, limit)
 
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     # ─────────────────────────────────────────────────────────────────────────
     # GOOGLE LENS
     # ─────────────────────────────────────────────────────────────────────────

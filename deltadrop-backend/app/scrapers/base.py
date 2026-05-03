@@ -6,10 +6,7 @@ import asyncio
 import logging
 import re
 import time
-<<<<<<< HEAD
 import sys
-=======
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Optional
@@ -63,7 +60,6 @@ USER_AGENTS = [
 # Shared browser instance across scrapers
 _browser: Optional[Browser] = None
 _playwright = None
-<<<<<<< HEAD
 _playwright_disabled = True
 
 # ── Windows Compatibility ──────────────────────────────────────────────────
@@ -131,29 +127,6 @@ async def get_browser() -> Browser:
 
 
 
-=======
-
-
-async def get_browser() -> Browser:
-    global _browser, _playwright
-    if _browser is None or not _browser.is_connected():
-        _playwright = await async_playwright().start()
-        _browser = await _playwright.chromium.launch(
-            headless=settings.SCRAPER_HEADLESS,
-            args=[
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-accelerated-2d-canvas",
-                "--disable-gpu",
-                "--window-size=1280,800",
-            ],
-        )
-        logger.info("✅ Playwright browser launched")
-    return _browser
-
-
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 async def close_browser():
     global _browser, _playwright
     if _browser:
@@ -213,7 +186,6 @@ class BaseScraper:
         ctx  = await self._new_context()
         page = await ctx.new_page()
 
-<<<<<<< HEAD
         # Enhanced anti-detection setup
         try:
             # Set realistic browser fingerprint
@@ -242,14 +214,6 @@ class BaseScraper:
         except Exception as e:
             logger.debug(f"Stealth setup failed: {e}")
             # Continue without stealth
-=======
-        # Apply playwright stealth plugin to bypass simple captchas
-        try:
-            from playwright_stealth import Stealth
-            await Stealth().apply_stealth_async(page)
-        except Exception as e:
-            logger.warning(f"playwright-stealth not applied properly: {e}")
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
         # Block ads / tracking to speed up scrapes
         await page.route(
@@ -470,7 +434,6 @@ class BaseScraper:
             return 1.0 # fallback if no keywords left
             
         p_words = set(re.findall(r'\w{2,}', p))
-<<<<<<< HEAD
         p_compact = "".join(p_words)
         matches = set(q_keywords.intersection(p_words))
 
@@ -482,9 +445,6 @@ class BaseScraper:
                 if f"{first}{second}" in p_compact or f"{second}{first}" in p_compact:
                     matches.add(first)
                     matches.add(second)
-=======
-        matches = q_keywords.intersection(p_words)
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         
         # STRICTOR OVERLAP: Must match at least 60% of keywords
         overlap_pct = len(matches) / len(q_keywords)
@@ -507,27 +467,18 @@ class BaseScraper:
                 score *= 0.5 
                 
         # 5. Accessory Penalty: if result is a case/cover but query isn't
-<<<<<<< HEAD
         accessory_keywords = [
             "case", "cover", "back cover", "phone cover", "mobile cover",
             "screen protector", "tempered glass", "guard", "skin", "pouch",
             "strap", "cable", "adapter", "charger", "earphone", "earphones",
             "earbuds", "neckband", "headset", "holder", "stand", "lens protector",
         ]
-=======
-        accessory_keywords = ["case", "cover", "screen protector", "tempered glass", "pouch", "strap", "cable", "adapter"]
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         is_result_accessory = any(kw in p for kw in accessory_keywords)
         is_query_accessory = any(kw in q for kw in accessory_keywords)
         
         if is_result_accessory and not is_query_accessory:
-<<<<<<< HEAD
             logger.info(f"[Filter] Rejected accessory for device query: {product_name}")
             return 0.0
-=======
-            # Harsh penalty for accessories when searching for the device
-            score *= 0.3
->>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
                 
         return min(score, 1.0)
 
