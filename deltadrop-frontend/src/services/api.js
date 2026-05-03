@@ -4,10 +4,13 @@
  * Wraps every backend endpoint with auth token injection,
  * error handling, and typed responses.
  *
- * Backend base: /api/v1  (set VITE_API_BASE in .env if needed)
+ * Backend base: VITE_API_BASE_URL (root URL, e.g. https://your-backend.onrender.com)
  */
 
-const BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE || 'http://127.0.0.1:8000/api/v1'
+// Root backend URL — set VITE_API_BASE_URL in your deployment environment
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE?.replace('/api/v1', '') || 'http://127.0.0.1:8000'
+// All API calls go through /api/v1 — never hardcode this prefix in individual routes
+const BASE = `${BASE_URL}/api/v1`
 const BACKEND_COOLDOWN_MS = 1500
 let backendOfflineUntil = 0
 
