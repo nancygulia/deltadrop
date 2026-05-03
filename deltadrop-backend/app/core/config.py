@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 DeltaDrop Settings — loaded from .env with strict production validation.
 
@@ -25,6 +26,11 @@ _WEAK_JWT_SECRETS = frozenset({
     "jwt-secret",
 })
 
+=======
+from pydantic_settings import BaseSettings
+from functools import lru_cache
+
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 class Settings(BaseSettings):
     # App
@@ -34,11 +40,19 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "Admin@123!"
 
     # Database
+<<<<<<< HEAD
     DATABASE_URL: str = ""
     DATABASE_URL_SYNC: str = ""
 
     # JWT — MUST be set in .env; never committed to source control
     JWT_SECRET_KEY: str = ""
+=======
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/deltadrop"
+    DATABASE_URL_SYNC: str = "postgresql://postgres:password@localhost:5432/deltadrop"
+
+    # JWT
+    JWT_SECRET_KEY: str = "change-this-secret"
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
@@ -57,6 +71,7 @@ class Settings(BaseSettings):
     ML_MODEL_PATH: str = "app/ml/models/price_predictor.pkl"
     ML_MIN_HISTORY_POINTS: int = 7
 
+<<<<<<< HEAD
     # AI / Google Gemini (backend-only, never expose to frontend)
     GEMINI_API_KEY: str = ""   # set in .env
 
@@ -65,17 +80,32 @@ class Settings(BaseSettings):
     SCRAPER_API_KEY: str = ""   # set in .env — sign up at scraperapi.com
     SCRAPE_DO_API_KEY: str = "" # set in .env — sign up at scrape.do
 
+=======
+    # AI / Google Gemini
+    GEMINI_API_KEY: str = ""   # set in .env
+
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     # Google OAuth (for Sign In with Google)
     GOOGLE_CLIENT_ID: str = ""  # set in .env — from Google Cloud Console
     APPLE_BUNDLE_ID: str = ""   # set in .env — native app bundle identifier
 
+<<<<<<< HEAD
     # Email (SMTP)
+=======
+    # Email (SMTP) — defaults to Mailtrap for development
+    # Swap these values in .env for Gmail, SendGrid, Resend, etc.
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     SMTP_HOST: str = "sandbox.smtp.mailtrap.io"
     SMTP_PORT: int = 587
     SMTP_USERNAME: str = ""
     SMTP_PASSWORD: str = ""
+<<<<<<< HEAD
     SMTP_USER: str = ""
     SMTP_PASS: str = ""
+=======
+    SMTP_USER: str = ""   # from Mailtrap → My Inboxes → SMTP Settings
+    SMTP_PASS: str = ""   # from Mailtrap → My Inboxes → SMTP Settings
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     SMTP_FROM_EMAIL: str = "noreply@deltadrop.in"
     SMTP_FROM_NAME: str = "DeltaDrop"
 
@@ -83,6 +113,7 @@ class Settings(BaseSettings):
     PASSWORD_RESET_EXPIRE_MINUTES: int = 30
     FRONTEND_RESET_URL: str = "http://localhost:5173/reset-password"
 
+<<<<<<< HEAD
     # Amazon Product Advertising API
     AMAZON_PA_ACCESS_KEY:   str = ""
     AMAZON_PA_SECRET_KEY:   str = ""
@@ -90,6 +121,21 @@ class Settings(BaseSettings):
 
     # Session store encryption key (AES-256)
     SECRET_KEY: str = ""
+=======
+    # Amazon Product Advertising API (Phase 3 — apply at affiliate-program.amazon.in)
+    AMAZON_PA_ACCESS_KEY:   str = ""   # AKIAIOSFODNN7EXAMPLE
+    AMAZON_PA_SECRET_KEY:   str = ""   # wJalrXUtnFEMI/K7MDENG/...
+    AMAZON_PA_ASSOCIATE_TAG: str = ""  # deltadrop-21
+
+    # Session store encryption key (AES-256)
+    SECRET_KEY: str = "deltadrop-change-this-in-production"
+
+    # Scraping API (Professional Unblocking)
+    SCRAPER_API_KEY: str = ""   # Sign up at scraperapi.com
+
+    # SerpAPI (Real-time Shopping Search)
+    SERPAPI_API_KEY: str = ""   # Sign up at serpapi.com
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
     # Cache freshness
     CACHE_STALE_THRESHOLD_MINUTES: int = 30
@@ -98,6 +144,7 @@ class Settings(BaseSettings):
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 
+<<<<<<< HEAD
 def _validate_settings(s: Settings) -> None:
     """
     Validate critical environment variables.
@@ -175,6 +222,11 @@ def get_settings() -> Settings:
     s = Settings()
     _validate_settings(s)
     return s
+=======
+@lru_cache()
+def get_settings() -> Settings:
+    return Settings()
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 
 settings = get_settings()

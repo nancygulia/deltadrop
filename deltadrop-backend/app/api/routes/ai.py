@@ -6,9 +6,14 @@ import logging
 from datetime import datetime, timezone
 import json
 
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import selectinload
+=======
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 from app.core.security import get_current_user
 from app.models.user import User
@@ -17,6 +22,7 @@ from app.core.config import settings
 router = APIRouter(prefix="/ai", tags=["AI Intelligence"])
 logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 # Rate limiter
 from app.core.rate_limit import rate_limiter
 
@@ -28,6 +34,8 @@ MAX_PRICE_HISTORY_LEN  = 500
 MAX_CATEGORY_LEN       = 100
 MAX_TEXT_FIELD_LEN      = 1000
 
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 # ── System Prompt ─────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """You are DeltaDrop's Price Intelligence Engine — a razor-sharp analyst for the Indian e-commerce market.
@@ -77,8 +85,13 @@ Always respond in exactly this structure:
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
 class AIRequest(BaseModel):
+<<<<<<< HEAD
     product_context: str = Field(..., max_length=MAX_CONTEXT_LEN)
     question:        str = Field(..., max_length=MAX_QUESTION_LEN)
+=======
+    product_context: str    # Structured product + price data block
+    question:        str    # User's free-text question
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 
 class AIResponse(BaseModel):
@@ -91,7 +104,10 @@ class AIResponse(BaseModel):
 @router.post("/ask", response_model=AIResponse)
 async def ask_ai(
     req: AIRequest,
+<<<<<<< HEAD
     request: Request,
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     current_user: User = Depends(get_current_user),
 ):
     """
@@ -100,9 +116,12 @@ async def ask_ai(
     Returns a ShopSavvy-style buy/wait recommendation grounded in real data.
     HARDENED: Never returns 500 — falls back to rule-based analysis if API unavailable.
     """
+<<<<<<< HEAD
     # Rate limit: 20 AI requests per minute per IP
     rate_limiter.check(request, "ai-ask", max_requests=20, window_seconds=60)
 
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
 
@@ -183,6 +202,7 @@ async def ask_ai(
 
 
 
+<<<<<<< HEAD
 @router.get("/recommendation")
 async def get_recommendation(
     product_id: int,
@@ -269,6 +289,8 @@ async def get_recommendation(
             }
 
 
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 @router.get("/status")
 async def ai_status(current_user: User = Depends(get_current_user)):
     """Check if the AI service is configured and reachable."""
@@ -278,6 +300,7 @@ async def ai_status(current_user: User = Depends(get_current_user)):
         "model":        "gemini-2.5-flash",
         "status":       "ready" if key_set else "missing_api_key",
     }
+<<<<<<< HEAD
 
 
 # ── POST /api/v1/ai/analyze — Structured BUY/WAIT Analysis ──────────────────
@@ -595,3 +618,5 @@ Note: Consider Indian market dynamics, GST implications, and competitive pricing
     except Exception as e:
         logger.error(f"[AI/mrp-analyze] Gemini failed: {e}")
         raise HTTPException(status_code=503, detail="AI analysis service temporarily unavailable")
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3

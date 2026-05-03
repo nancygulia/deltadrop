@@ -42,7 +42,11 @@ async def verify_retailer_price(url: str) -> dict[str, Any]:
     async with _scraperapi_verify_semaphore:
         try:
             encoded_url = quote_plus(url)
+<<<<<<< HEAD
             api_url = f"http://scraperapi.com?api_key={settings.SCRAPER_API_KEY}&url={encoded_url}"
+=======
+            api_url = f"http://api.scraperapi.com?api_key={settings.SCRAPER_API_KEY}&url={encoded_url}"
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
             response = await asyncio.to_thread(requests.get, api_url, timeout=20)
             response.raise_for_status()
             html = response.text

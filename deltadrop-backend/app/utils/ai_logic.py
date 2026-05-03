@@ -1,12 +1,20 @@
+<<<<<<< HEAD
 import asyncio
 import json
 import logging
+=======
+import logging
+import os
+import json
+import asyncio
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 from typing import Optional
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+<<<<<<< HEAD
 
 def _clip(value: float, lower: float, upper: float) -> float:
     return max(lower, min(upper, value))
@@ -83,12 +91,52 @@ def generate_recommendation_logic(
         f"Across {seller_count} sellers the spread is {spread_pct:.1f}%. {smart_recommendation}"
     )
 
+=======
+def generate_recommendation_logic(
+    current_price: float,
+    min_price: float,
+    trend_7d: float,
+    prediction_price: float,
+    confidence: float
+) -> dict:
+    """
+    PRO FEATURES fallback logic.
+    Detects if near lowest (<=3%), overpriced (>10%), or falling trend.
+    """
+    atl_gap_pct = ((current_price - min_price) / (min_price + 0.01)) * 100
+    
+    # Defaults
+    verdict = "NEUTRAL"
+    smart_recommendation = "Price is stable."
+    suggested_alert_price = round(min_price * 1.02) # Suggest 2% above all time low
+    
+    if atl_gap_pct <= 3.0:
+        verdict = "BUY"
+        smart_recommendation = "Best time to buy! Price is near the all-time low."
+    elif atl_gap_pct > 10.0:
+        verdict = "WAIT"
+        smart_recommendation = f"Overpriced. Current price is {atl_gap_pct:.1f}% above the historical minimum."
+    elif trend_7d < -0.5:
+        verdict = "WAIT"
+        smart_recommendation = "Price dropping soon. Wait for the trend to bottom out."
+    elif prediction_price < current_price * 0.97:
+        verdict = "WAIT"
+        smart_recommendation = f"ML model predicts a drop to ₹{prediction_price:,.0f}."
+        suggested_alert_price = prediction_price
+    else:
+        verdict = "NEUTRAL"
+        smart_recommendation = "Fair market value. Buy if needed, or wait for a drop."
+
+    reasoning = smart_recommendation
+    
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     return {
         "verdict": verdict,
         "reasoning": reasoning,
         "confidence": confidence,
         "method": "pro_fallback",
         "insights": {
+<<<<<<< HEAD
             "price_comparison": f"Current: Rs. {current_price:,.0f} | Lowest: Rs. {min_price:,.0f} | Highest: Rs. {max_price:,.0f}",
             "trend_analysis": f"7-Day Trend: {trend_7d:+.1f}% | Market spread: {spread_pct:.1f}%",
             "smart_recommendation": smart_recommendation,
@@ -98,10 +146,20 @@ def generate_recommendation_logic(
     }
 
 
+=======
+            "price_comparison": f"Current: ₹{current_price:,.0f} | Lowest: ₹{min_price:,.0f}",
+            "trend_analysis": f"7-Day Trend: {trend_7d:+.1f}%",
+            "smart_recommendation": smart_recommendation,
+            "suggested_alert_price": suggested_alert_price
+        }
+    }
+
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 async def get_ai_recommendation(
     product_name: str,
     current_price: float,
     min_price: float,
+<<<<<<< HEAD
     max_price: float,
     trend_7d: float,
     prediction_price: float,
@@ -168,12 +226,56 @@ Do not use markdown.
         text = (response.text or "").strip()
         logger.info(f"[AI] Gemini response received product={product_name} chars={len(text)}")
 
+=======
+    trend_7d: float,
+    prediction_price: float,
+    confidence: float
+) -> dict:
+    """
+    Integrates Gemini AI with a strict 100% crash-proof fallback to internal logic.
+    Uses google.generativeai and gemini-1.5-flash.
+    """
+    baseline = generate_recommendation_logic(current_price, min_price, trend_7d, prediction_price, confidence)
+    
+    api_key = settings.GEMINI_API_KEY
+    if not api_key:
+        logger.info(f"[AI] No valid GEMINI_API_KEY. Using pro_fallback for {product_name}.")
+        return baseline
+
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        
+        prompt = f"""
+        Product: {product_name}
+        Current Price: ₹{current_price:,.0f}
+        Historical Low: ₹{min_price:,.0f}
+        7-Day Trend: {trend_7d:.1f}%
+        
+        Baseline Verdict: {baseline['verdict']}
+        Baseline Insights: {baseline['insights']['smart_recommendation']}
+        
+        You are DeltaDrop's AI. Provide a JSON response ONLY with these exact keys:
+        - verdict: "BUY", "WAIT", or "NEUTRAL"
+        - reasoning: A highly concise 1-paragraph explanation focusing on value and data.
+        - smart_recommendation: A snappy 3-5 word insight (e.g. "Best time to buy", "Overpriced", "Price dropping soon").
+        - suggested_alert_price: An integer price target based on historical lows.
+        
+        Do not use markdown blocks like ```json. Return raw JSON.
+        """
+        
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+        
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         if text.startswith("```json"):
             text = text[7:]
         if text.startswith("```"):
             text = text[3:]
         if text.endswith("```"):
             text = text[:-3]
+<<<<<<< HEAD
 
         parsed = json.loads(text)
         logger.info(f"[AI] Gemini parsed output product={product_name} keys={list(parsed.keys())}")
@@ -350,3 +452,71 @@ Rules:
     except Exception as e:
         logger.error(f"[AI] Gemini trajectory failed for {product_name}: {e} — using simulation")
         return _sim_fallback()
+=======
+            
+        parsed = json.loads(text)
+        
+        # Ensure we have all necessary fields
+        return {
+            "verdict": parsed.get("verdict", baseline["verdict"]),
+            "reasoning": parsed.get("reasoning", baseline["reasoning"]),
+            "confidence": 0.85,
+            "method": "gemini_1.5_flash",
+            "insights": {
+                "price_comparison": f"Current: ₹{current_price:,.0f} | Lowest: ₹{min_price:,.0f}",
+                "trend_analysis": f"7-Day Trend: {trend_7d:+.1f}%",
+                "smart_recommendation": parsed.get("smart_recommendation", baseline["insights"]["smart_recommendation"]),
+                "suggested_alert_price": parsed.get("suggested_alert_price", baseline["insights"]["suggested_alert_price"])
+            }
+        }
+    except Exception as e:
+        logger.error(f"[AI] Gemini failure for {product_name}: {e}. Falling back to internal logic.")
+        baseline["reasoning"] = f"AUTO-SENTINEL: {baseline['reasoning']}"
+        baseline["method"] = "error_fallback"
+        return baseline
+async def get_ai_prediction_trajectory(
+    product_name: str,
+    current_price: float,
+    category: str = "Electronics"
+) -> dict:
+    """
+    Predicts a 7-day price trajectory using Gemini AI.
+    Used when local ML models lack sufficient historical data.
+    """
+    api_key = settings.GEMINI_API_KEY
+    if not api_key:
+        return {}
+
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        prompt = f"""
+        Product: {product_name}
+        Category: {category}
+        Current Market Price: ₹{current_price:,.0f}
+
+        You are a market analyst at DeltaDrop. Predict the price trajectory for the next 7 days based on market trends for this category in India.
+        Return a JSON object ONLY with:
+        - trajectory: An array of 7 numbers representing the predicted daily price for the next 7 days.
+        - confidence: A float between 0 and 1.
+        - reasoning: A 1-sentence explanation of the trend.
+        
+        Do not use markdown. Return raw JSON.
+        """
+        response = await asyncio.to_thread(model.generate_content, prompt)
+        text = response.text.strip()
+        
+        # Clean potential markdown
+        if "```" in text:
+            text = text.split("```")[1]
+            if text.startswith("json"):
+                text = text[4:]
+
+        data = json.loads(text)
+        return data
+    except Exception as e:
+        logger.error(f"[AI] Trajectory prediction failed: {e}")
+        return {}
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3

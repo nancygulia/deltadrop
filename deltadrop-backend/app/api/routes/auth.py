@@ -2,7 +2,11 @@ from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 import requests
 
+<<<<<<< HEAD
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+=======
+from fastapi import APIRouter, Depends, HTTPException, status
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +22,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.models.user import RefreshToken
 from app.utils.email import send_password_reset_email
+<<<<<<< HEAD
 from app.core.rate_limit import rate_limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -25,6 +30,11 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 import logging as _logging
 _auth_logger = _logging.getLogger("deltadrop.auth")
 
+=======
+
+router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 # ── Schemas ────────────────────────────────────────────────────────────────────
 
@@ -108,10 +118,14 @@ def _verify_google_token(token: str, token_type: str) -> dict:
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @router.post("/register", status_code=201)
+<<<<<<< HEAD
 async def register(body: RegisterRequest, request: Request, db: AsyncSession = Depends(get_db)):
     # Rate limit: 3 registrations per minute per IP
     rate_limiter.check(request, "register", max_requests=3, window_seconds=60)
 
+=======
+async def register(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     email_norm = body.email.lower().strip()
     # Check email exists
     result = await db.execute(select(User).where(User.email == email_norm))
@@ -140,29 +154,47 @@ async def register(body: RegisterRequest, request: Request, db: AsyncSession = D
 
 
 @router.post("/login", response_model=TokenResponse)
+<<<<<<< HEAD
 async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
     # Rate limit: 5 login attempts per minute per IP
     rate_limiter.check(request, "login", max_requests=5, window_seconds=60)
 
+=======
+async def login(body: LoginRequest, db: AsyncSession = Depends(get_db)):
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     email_norm = body.email.lower().strip()
     result = await db.execute(select(User).where(User.email == email_norm))
     user   = result.scalar_one_or_none()
 
+<<<<<<< HEAD
     client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
     if not client_ip:
         client_ip = request.client.host if request.client else "unknown"
 
     if not user:
         _auth_logger.warning(f"Login FAILED: unknown email {email_norm} from IP {client_ip}")
+=======
+    if not user:
+        import logging
+        logging.getLogger("uvicorn").warning(f"Auth failed: User not found for {email_norm}")
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     is_verified = verify_password(body.password, user.password_hash)
     if not is_verified:
+<<<<<<< HEAD
         _auth_logger.warning(f"Login FAILED: wrong password for {email_norm} from IP {client_ip}")
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     if not user.is_active:
         _auth_logger.warning(f"Login FAILED: disabled account {email_norm} from IP {client_ip}")
+=======
+        import logging
+        logging.getLogger("uvicorn").warning(f"Auth failed: Password verification failed for {email_norm}")
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if not user.is_active:
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         raise HTTPException(status_code=403, detail="Account disabled")
 
     access_token  = create_access_token({"sub": str(user.id), "role": user.role.value})
@@ -248,10 +280,14 @@ async def logout(body: RefreshRequest, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/google-login", response_model=TokenResponse)
+<<<<<<< HEAD
 async def google_login(body: GoogleLoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
     # Rate limit: 10 Google login attempts per minute per IP
     rate_limiter.check(request, "google-login", max_requests=10, window_seconds=60)
 
+=======
+async def google_login(body: GoogleLoginRequest, db: AsyncSession = Depends(get_db)):
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     """
     Verifies a Google OAuth access token or ID token, creates or identifies the user, and issues JWT tokens.
     """
@@ -335,10 +371,14 @@ async def google_login(body: GoogleLoginRequest, request: Request, db: AsyncSess
         )
 
 @router.post("/apple-login", response_model=TokenResponse)
+<<<<<<< HEAD
 async def apple_login(body: AppleLoginRequest, request: Request, db: AsyncSession = Depends(get_db)):
     # Rate limit: 10 Apple login attempts per minute per IP
     rate_limiter.check(request, "apple-login", max_requests=10, window_seconds=60)
 
+=======
+async def apple_login(body: AppleLoginRequest, db: AsyncSession = Depends(get_db)):
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     """
     Verifies an Apple Identity token, creates or identifies the user, and issues JWT tokens.
     """

@@ -490,6 +490,7 @@ class UniversalScraper(BaseScraper):
     async def _playwright_scrape(self, url: str, retailer: str, profile: Optional[SiteProfile] = None) -> ScrapedPrice:
         """
         Full Playwright scrape with stealth mode.
+<<<<<<< HEAD
         Used as last resort for heavy JS pages (JS-rendered prices/images).
         """
         try:
@@ -534,11 +535,54 @@ class UniversalScraper(BaseScraper):
             # Return an empty result with the error rather than crashing
             return ScrapedPrice(retailer=retailer, url=url, product_name="", current_price=None, mrp=None, discount_pct=None, error=str(e))
 
+=======
+        Used as last resort for heavy JS pages (Meesho, Tanishq etc.)
+        """
+        wait_sel = (profile.wait_selector if profile else None) or "body"
+        page = await self._get_page(url, wait_selector=wait_sel)
+        try:
+            # Wait a bit extra for JS price rendering
+            await page.wait_for_timeout(2000)
+
+            # Get rendered HTML and parse it
+            html = await page.content()
+            result = self._parse_html(html, url, retailer, profile)
+            if result.current_price:
+                return result
+
+            # If still no price, try Playwright-based element extraction
+            # (JS may have rendered it into elements not in initial HTML)
+            price_sels = (profile.price_selectors if profile else []) + PRICE_SELECTORS
+            for sel in price_sels:
+                val = await self._pw_text(page, sel)
+                if val and re.search(r'\d', val):
+                    p = self.parse_price(val)
+                    if p and p > 0:
+                        result.current_price = p
+                        break
+
+            if not result.image_url:
+                image_sels = (profile.image_selectors if profile else []) + IMAGE_SELECTORS
+                for sel in image_sels:
+                    img = (await self._pw_attr(page, sel, "src") or
+                           await self._pw_attr(page, sel, "data-src"))
+                    if img and img.startswith("http"):
+                        result.image_url = img
+                        break
+
+            return result
+        finally:
+            await page.context.close()
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
     # ─────────────────────────────────────────────────────────────────────────
     # TEXT SEARCH — profile-driven, all retailers in parallel
     # ─────────────────────────────────────────────────────────────────────────
+<<<<<<< HEAD
     async def search_by_name(self, query: str, limit_per_site: int = 5, user_category: Optional[str] = None, allowed_retailers: Optional[list[str]] = None) -> dict:
+=======
+    async def search_by_name(self, query: str, limit_per_site: int = 5, user_category: Optional[str] = None) -> dict:
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         """
         Deltadrop Identity & Discovery (DID) Engine.
         1. Resolve Identity via Google.
@@ -575,6 +619,7 @@ class UniversalScraper(BaseScraper):
         # B: Profile-driven backup
         all_profiles = get_searchable_profiles()
         filtered_profiles, brand_urls = get_relevant_retailers(canonical_name, all_profiles)
+<<<<<<< HEAD
         from app.scrapers.search_optimizer import search_optimizer
         
         scrape_profiles = []
@@ -589,6 +634,12 @@ class UniversalScraper(BaseScraper):
                     logger.debug(f"[Universal] Skipping blocked retailer profile: {p.domain}")
                     continue
             scrape_profiles.append(p)
+=======
+        scrape_profiles = [
+            p for p in filtered_profiles
+            # if not (amazon_paapi.is_available and "amazon" in p.domain)
+        ]
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         profile_task = asyncio.gather(
             *[self._search_one_site(search_query, p, limit_per_site) for p in scrape_profiles],
             return_exceptions=True
@@ -1149,10 +1200,13 @@ class UniversalScraper(BaseScraper):
         items = results.get("results", []) if isinstance(results, dict) else results
         return items[:limit]
 
+<<<<<<< HEAD
     async def search_products(self, query: str, retailer: str = None, limit: int = 5) -> list[ScrapedPrice]:
         """Alias for search_product to match search service expectations"""
         return await self.search_product(query, limit)
 
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     # ─────────────────────────────────────────────────────────────────────────
     # GOOGLE LENS
     # ─────────────────────────────────────────────────────────────────────────

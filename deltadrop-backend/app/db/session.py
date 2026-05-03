@@ -3,6 +3,7 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
+<<<<<<< HEAD
 
 def _clean_async_url(url: str) -> tuple[str, dict]:
     """Strip sslmode from URL and return connect_args for asyncpg."""
@@ -20,11 +21,18 @@ _db_url, _connect_args = _clean_async_url(settings.DATABASE_URL)
 
 engine = create_async_engine(
     _db_url,
+=======
+engine = create_async_engine(
+    settings.DATABASE_URL,
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     pool_pre_ping=True,
     pool_size=10,
     max_overflow=20,
     echo=(settings.APP_ENV == "development"),
+<<<<<<< HEAD
     connect_args=_connect_args,
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 )
 
 AsyncSessionLocal = async_sessionmaker(

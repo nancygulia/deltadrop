@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Dependencies
 node_modules/
 .venv/
@@ -29,3 +30,47 @@ __pycache__/
 
 # Logs
 *.log
+=======
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Environment variables (IMPORTANT ⚠️)
+.env
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.png
+*_dump.html
+**debug.html
+debug**.py
+scratch/
+
+# Database
+*.sqlite3
+
+# Node (if any)
+node_modules/
+
+# Build files
+dist/
+build/
+
+.env
+config.json
+secrets.json
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3

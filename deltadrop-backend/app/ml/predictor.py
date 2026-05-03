@@ -250,7 +250,11 @@ class PricePredictor:
             "confidence":      0.1,
             "horizon_days":    7,
             "verdict":         "NEUTRAL",
+<<<<<<< HEAD
             "reasoning":       "Collecting price history. AI trajectory is being generated.",
+=======
+            "reasoning":       "Collecting price history. AI-based trajectory estimates are being calculated.",
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
             "model_version":   "v1_insufficient_data",
             "trajectory":      [current_price] * 7
         }
@@ -274,7 +278,11 @@ async def run_prediction_for_product(product_id: int, db: Optional[AsyncSession]
     Fetch price history from DB and run prediction.
     Stores result in price_predictions table.
     """
+<<<<<<< HEAD
     from app.models.product import PriceHistory, PricePrediction, Product
+=======
+    from app.models.product import PriceHistory, PricePrediction
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     from sqlalchemy import select
     from datetime import datetime, timezone
     from app.db.session import AsyncSessionLocal 
@@ -294,10 +302,18 @@ async def run_prediction_for_product(product_id: int, db: Optional[AsyncSession]
         )
         history = result.scalars().all()
 
+<<<<<<< HEAD
+=======
+        if not history:
+            return None
+
+        # Format for ML
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         raw_history = [
             {"price": float(h.price), "recorded_at": h.recorded_at.isoformat()}
             for h in history
         ]
+<<<<<<< HEAD
         current_price = float(history[0].price) if history else 0.0
 
         if not history:
@@ -318,6 +334,11 @@ async def run_prediction_for_product(product_id: int, db: Optional[AsyncSession]
             return fallback
 
         # Predict
+=======
+
+        # Predict
+        current_price = float(history[0].price)
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
         prediction = price_predictor.predict(raw_history, current_price)
 
         # ── AI Augmentation ──
@@ -371,6 +392,7 @@ async def run_prediction_for_product(product_id: int, db: Optional[AsyncSession]
 
     except Exception as e:
         logger.error(f"[Predictor] Failed for product {product_id}: {e}")
+<<<<<<< HEAD
         fallback = price_predictor._insufficient_data_verdict(0.0)
         try:
             db.add(PricePrediction(
@@ -389,6 +411,9 @@ async def run_prediction_for_product(product_id: int, db: Optional[AsyncSession]
         except Exception:
             pass
         return fallback
+=======
+        return None
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
     finally:
         if is_local_session:
             await db.close()

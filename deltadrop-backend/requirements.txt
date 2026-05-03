@@ -2,21 +2,28 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 python-multipart==0.0.12
+<<<<<<< HEAD
 requests==2.31.0
 aiofiles==23.2.1
 aiohttp==3.13.5
 jinja2==3.1.2
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 # ── Database ───────────────────────────────────────────────────────────────────
 sqlalchemy==2.0.35
 alembic==1.13.3
 psycopg2-binary==2.9.9
 asyncpg==0.29.0
+<<<<<<< HEAD
 aiosqlite==0.20.0
+=======
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 # ── Auth ───────────────────────────────────────────────────────────────────────
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+<<<<<<< HEAD
 PyJWT==2.8.0
 bcrypt==3.2.2
 
@@ -30,6 +37,14 @@ curl-cffi==0.6.2
 httpx==0.28.1
 h2==4.1.0
 playwright-stealth==1.0.6
+=======
+
+# ── Scraping ───────────────────────────────────────────────────────────────────
+playwright==1.47.0
+httpx==0.27.2
+beautifulsoup4==4.12.3
+lxml==5.3.0
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 # ── ML / AI Price Prediction ───────────────────────────────────────────────────
 scikit-learn==1.5.2
@@ -39,7 +54,11 @@ joblib==1.4.2
 
 # ── AI Chat Intelligence ───────────────────────────────────────────────────────
 anthropic==0.40.0
+<<<<<<< HEAD
 google-genai==1.2.0
+=======
+google-genai==1.13.0
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
 
 # ── Scheduler ──────────────────────────────────────────────────────────────────
 apscheduler==3.10.4
@@ -57,3 +76,7 @@ hiredis==3.0.0
 # ── Dev / Testing ──────────────────────────────────────────────────────────────
 pytest==8.3.3
 pytest-asyncio==0.24.0
+<<<<<<< HEAD
+=======
+httpx==0.27.2
+>>>>>>> e8057c814e93e052b4b5426cd31920469f1aa1d3
